@@ -61,6 +61,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "ihsk"
+version = "0.1.0"
+dependencies = [
+ "dirs-next",
+ "rustyline",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.86"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -110,13 +118,6 @@ checksum = "528532f3d801c87aec9def2add9ca802fe569e44a544afe633765267840abe64"
 dependencies = [
  "getrandom",
  "redox_syscall",
-]
-
-[[package]]
-name = "repl"
-version = "0.1.0"
-dependencies = [
- "rustyline",
 ]
 
 [[package]]

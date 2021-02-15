@@ -57,9 +57,7 @@ fn main() {
         Cmd::Newline,
     );
 
-    if rl.load_history("history.txt").is_err() {
-        println!("No previous history.");
-    }
+    let _ = load_history(&mut rl);
 
     let (tx_in, rx_in) = channel();
     let (tx_out, rx_out) = channel();
@@ -81,5 +79,20 @@ fn main() {
             Err(_err) => break,
         }
     }
-    rl.save_history("history.txt").unwrap();
+    let _ = save_history(&mut rl);
+}
+
+type CatchAll<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+fn load_history(rl: &mut Editor<IHsk>) -> CatchAll<()> {
+    let ihsk_path = dirs_next::cache_dir().ok_or("")?.join("ihsk");
+    let _ = std::fs::create_dir(&ihsk_path);
+
+    let _ = rl.load_history(&ihsk_path.join("history.txt"));
+    Ok(())
+}
+
+fn save_history(rl: &mut Editor<IHsk>) -> CatchAll<()> {
+    let ihsk_path = dirs_next::cache_dir().ok_or("")?.join("ihsk");
+    let _ = rl.save_history(&ihsk_path.join("history.txt"));
+    Ok(())
 }
