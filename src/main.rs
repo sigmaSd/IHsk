@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::{borrow::Cow, sync::mpsc::channel};
 
 use rustyline::{
@@ -17,7 +18,14 @@ mod utils;
 #[derive(Default)]
 struct IHsk {
     validator: MatchingBracketValidator,
-    hints: Vec<String>,
+    hints: HashSet<String>,
+}
+impl IHsk {
+    fn add_to_hints(&mut self, line: &str) {
+        line.split_whitespace().for_each(|item| {
+            self.hints.insert(item.into());
+        });
+    }
 }
 impl Helper for IHsk {}
 impl Validator for IHsk {
@@ -67,7 +75,7 @@ impl Completer for IHsk {
         pos: usize,
         _ctx: &Context<'_>,
     ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
-        let last_word_start_pos = line[..pos].rfind(" ").map(|i| i + 1).unwrap_or(0);
+        let last_word_start_pos = line[..pos].rfind(' ').map(|i| i + 1).unwrap_or(0);
         let word_to_complete = &line[last_word_start_pos..pos];
         if word_to_complete.is_empty() {
             return Ok((0, vec![]));
@@ -79,7 +87,7 @@ impl Completer for IHsk {
                 return Ok((pos, vec![hint]));
             }
         }
-        return Ok((0, vec![]));
+        Ok((0, vec![]))
     }
 }
 
@@ -102,14 +110,8 @@ fn main() {
 
         match readline {
             Ok(line) => {
-                rl.helper_mut().unwrap().hints.append(
-                    &mut line
-                        .split_whitespace()
-                        .map(|l| l.to_owned())
-                        .collect::<Vec<String>>(),
-                );
-
                 rl.add_history_entry(line.as_str());
+                rl.helper_mut().unwrap().add_to_hints(&line);
                 tx_in.send(line.replace("\n", "") + "\n").unwrap();
                 let out = rx_out.recv().unwrap();
                 if !out.is_empty() {
