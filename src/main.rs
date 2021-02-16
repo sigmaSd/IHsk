@@ -57,11 +57,11 @@ fn main() {
         Cmd::Newline,
     );
 
-    let _ = load_history(&mut rl);
-
     let (tx_in, rx_in) = channel();
     let (tx_out, rx_out) = channel();
     std::thread::spawn(move || ghci(rx_in, tx_out));
+
+    let _ = load_history(&mut rl);
 
     loop {
         let readline = rl.readline("\x1b[1;33mIn: \x1b[0m");
@@ -74,7 +74,7 @@ fn main() {
                     println!("\x1b[1;31mOut: \x1b[0m {}", out);
                 }
             }
-            Err(ReadlineError::Interrupted) => break,
+            Err(ReadlineError::Interrupted) => {}
             Err(ReadlineError::Eof) => break,
             Err(_err) => break,
         }

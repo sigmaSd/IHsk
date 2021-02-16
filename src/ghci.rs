@@ -12,6 +12,7 @@ pub fn ghci(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
         .stderr(Stdio::piped())
         .spawn()
         .unwrap();
+    let pid = process.id();
     let mut stdout = BufReader::new(process.stdout.as_mut().unwrap());
 
     let mut out = vec![];
@@ -29,6 +30,15 @@ pub fn ghci(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
         }
     });
 
+    ctrlc::set_handler(move || {
+        use nix::{
+            sys::signal::{kill, Signal},
+            unistd::Pid,
+        };
+        let _ = kill(Pid::from_raw(pid as i32), Some(Signal::SIGINT));
+    })
+    .expect("Error setting Ctrl-C handler");
+
     loop {
         out.clear();
         let inp = match rx_in.recv() {
@@ -36,6 +46,7 @@ pub fn ghci(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
             // program has ended
             _ => break,
         };
+
         process
             .stdin
             .as_mut()
@@ -44,14 +55,10 @@ pub fn ghci(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
             .unwrap();
 
         read_until_bytes(&mut stdout, PRELUDE_MARK, &mut out).unwrap();
+
         let out = &out[..out.len() - PRELUDE_MARK.len()];
-        if out.is_empty() {
-            //check stderr for errors
-            tx_out.send(rx_err.try_iter().collect()).unwrap();
-        } else {
-            tx_out
-                .send(String::from_utf8(out.to_vec()).unwrap())
-                .unwrap();
-        }
+        let out = String::from_utf8(out.to_vec()).unwrap();
+        let err: String = rx_err.try_iter().collect();
+        tx_out.send(out + &err).unwrap();
     }
 }
