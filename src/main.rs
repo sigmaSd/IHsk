@@ -71,7 +71,7 @@ fn main() {
                 tx_in.send(line.replace("\n", "") + "\n").unwrap();
                 let out = rx_out.recv().unwrap();
                 if !out.is_empty() {
-                    println!("\x1b[1;31mOut: \x1b[0m {}", out);
+                    println!("\x1b[1;31mOut:\x1b[0m {}", out);
                 }
             }
             Err(ReadlineError::Interrupted) => {}
