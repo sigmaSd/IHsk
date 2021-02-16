@@ -44,6 +44,7 @@ impl Highlighter for IHsk {
 fn highlight_keywords(line: &str) -> String {
     line.replace(";", "\x1b[1;33m;\x1b[0m")
         .replace("let", "\x1b[1;32mlet\x1b[0m")
+        .replace("in", "\x1b[1;32min\x1b[0m")
         .replace("where", "\x1b[1;31mwhere\x1b[0m")
         .replace("data", "\x1b[1;34mdata\x1b[0m")
         .replace("deriving", "\x1b[1;35mderiving\x1b[0m")
