@@ -3,7 +3,8 @@ use std::io::{prelude::*, BufReader};
 use std::process::Stdio;
 use std::sync::mpsc;
 
-const PRELUDE_MARK: &[u8] = b"Prelude> ";
+const PRELUDE_MARK1: &[u8] = b"Prelude";
+const PRELUDE_MARK2: &[u8] = b"> ";
 
 pub fn ghci(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
     let mut process = std::process::Command::new("ghci")
@@ -16,7 +17,9 @@ pub fn ghci(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
     let mut stdout = BufReader::new(process.stdout.as_mut().unwrap());
 
     let mut out = vec![];
-    read_until_bytes(&mut stdout, PRELUDE_MARK, &mut out).unwrap();
+    //read welcome message
+    read_until_bytes(&mut stdout, PRELUDE_MARK1, &mut out).unwrap();
+    read_until_bytes(&mut stdout, PRELUDE_MARK2, &mut out).unwrap();
 
     let (tx_err, rx_err) = mpsc::channel();
     let mut stderr = process.stderr.take();
@@ -54,10 +57,12 @@ pub fn ghci(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
             .write_all(inp.as_bytes())
             .unwrap();
 
-        read_until_bytes(&mut stdout, PRELUDE_MARK, &mut out).unwrap();
+        read_until_bytes(&mut stdout, PRELUDE_MARK1, &mut out).unwrap();
+        read_until_bytes(&mut stdout, PRELUDE_MARK2, &mut out).unwrap();
 
-        let out = &out[..out.len() - PRELUDE_MARK.len()];
         let out = String::from_utf8(out.to_vec()).unwrap();
+        let end = out.rfind("Prelude").unwrap();
+        let out = out[..end].to_owned();
         let err: String = rx_err.try_iter().collect();
         tx_out.send(out + &err).unwrap();
     }
