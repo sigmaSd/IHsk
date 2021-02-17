@@ -79,7 +79,7 @@ impl<I: Iterator<Item = char>> Iterator for SplitNonAlphanumeric<I> {
                 }
             };
 
-            if c.is_alphanumeric() {
+            if c.is_alphanumeric() || c == '_' {
                 self.part.push(c);
             } else {
                 break;
@@ -93,7 +93,7 @@ impl<I: Iterator<Item = char>> Iterator for SplitNonAlphanumeric<I> {
             // else drain all next non aplhanumeric characters
             // and then recurse to try to find the next part
             while let Some(c) = self.buffer.next() {
-                if c.is_alphanumeric() {
+                if c.is_alphanumeric() || c == '_' {
                     self.part.push(c);
                     return self.next();
                 }
