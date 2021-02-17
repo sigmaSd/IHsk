@@ -24,7 +24,7 @@ struct IHsk {
 impl IHsk {
     fn add_to_hints(&mut self, line: &str) {
         line.split_non_alphanumeric().for_each(|item| {
-            self.hints.insert(item.into());
+            self.hints.insert(item);
         });
     }
 }
