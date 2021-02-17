@@ -65,6 +65,8 @@ fn highlight_keywords(line: &str) -> String {
         .replace("<", "\x1b[1;33m<\x1b[0m")
         .replace("^", "\x1b[1;33m^\x1b[0m")
         .replace("|", "\x1b[1;33m|\x1b[0m")
+        .replace(".", "\x1b[1;31m.\x1b[0m")
+        .replace("$", "\x1b[1;31m$\x1b[0m")
 }
 impl Hinter for IHsk {
     type Hint = String;
