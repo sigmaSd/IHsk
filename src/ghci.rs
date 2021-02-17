@@ -27,8 +27,7 @@ pub fn ghci(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
         let mut err = [0; 500];
         loop {
             let n = stderr.as_mut().unwrap().read(&mut err).unwrap();
-            let _ = tx_err
-                .send(String::from_utf8(err[..n].to_vec()).unwrap())
+            let _ = tx_err.send(String::from_utf8(err[..n].to_vec()).unwrap());
         }
     });
 

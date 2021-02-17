@@ -14,6 +14,7 @@ use rustyline::{Editor, Helper};
 mod ghci;
 use ghci::ghci;
 mod utils;
+use utils::StringTools;
 
 #[derive(Default)]
 struct IHsk {
@@ -22,7 +23,7 @@ struct IHsk {
 }
 impl IHsk {
     fn add_to_hints(&mut self, line: &str) {
-        line.split_whitespace().for_each(|item| {
+        line.split_non_alphanumeric().for_each(|item| {
             self.hints.insert(item.into());
         });
     }
@@ -82,13 +83,14 @@ impl Completer for IHsk {
             return Ok((0, vec![]));
         }
 
+        let mut candidates = vec![];
         for hint in self.hints.iter() {
             if hint.starts_with(word_to_complete) {
-                let hint = hint.replace(word_to_complete, "");
-                return Ok((pos, vec![hint]));
+                let hint = hint.replacen(word_to_complete, "", 1);
+                candidates.push(hint);
             }
         }
-        Ok((0, vec![]))
+        Ok((pos, candidates))
     }
 }
 
