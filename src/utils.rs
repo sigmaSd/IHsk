@@ -1,39 +1,24 @@
-pub fn read_until_bytes<R: std::io::BufRead + ?Sized>(
-    r: &mut R,
-    delim: &[u8],
-    buffer: &mut Vec<u8>,
-) -> std::io::Result<usize> {
-    let mut read = 0;
-    let mut count = 0;
-    loop {
-        let (done, used) = {
-            let available = match r.fill_buf() {
-                Ok(n) => n,
-                Err(ref e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
-                Err(e) => return Err(e),
-            };
-            match available.iter().position(|b| *b == delim[count]) {
-                Some(i) => {
-                    buffer.extend_from_slice(&available[..=i]);
+pub trait VecTools {
+    fn contains_slice(&self, slice: &[u8]) -> bool;
+}
+impl VecTools for Vec<u8> {
+    fn contains_slice(&self, slice: &[u8]) -> bool {
+        let mut idx = 0;
+        loop {
+            if idx == self.len() {
+                return false;
+            }
 
-                    count += 1;
-                    if count == delim.len() {
-                        (true, i + 1)
-                    } else {
-                        (false, i + 1)
-                    }
+            if self[idx] == slice[0] {
+                //check the rest immediately
+                if idx + slice.len() >= self.len() {
+                    return false;
                 }
-                None => {
-                    count = 0;
-                    buffer.extend_from_slice(available);
-                    (false, available.len())
+                if &self[idx..idx + slice.len()] == slice {
+                    return true;
                 }
             }
-        };
-        r.consume(used);
-        read += used;
-        if done || used == 0 {
-            return Ok(read);
+            idx += 1;
         }
     }
 }

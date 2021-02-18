@@ -1,10 +1,9 @@
 use crate::colors::Color;
-use crate::utils::read_until_bytes;
 use std::io::{prelude::*, BufReader};
 use std::process::Stdio;
 use std::sync::mpsc;
 
-const PRELUDE_MARK: &[u8] = b"\n-";
+const PRELUDE_MARK: &[u8] = b"\n- ";
 
 pub fn smlnj(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
     let mut process = std::process::Command::new("smlnj")
@@ -17,8 +16,16 @@ pub fn smlnj(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
     let mut stdout = BufReader::new(process.stdout.as_mut().unwrap());
 
     let mut out = vec![];
+    let mut buf = [0; 512];
     //read welcome message
-    read_until_bytes(&mut stdout, PRELUDE_MARK, &mut out).unwrap();
+    let mut read = |out: &mut Vec<u8>, mut buf: &mut [u8]| loop {
+        let n = stdout.read(&mut buf).unwrap();
+        out.extend(buf.iter().take(n));
+        if out.ends_with(PRELUDE_MARK) {
+            break;
+        }
+    };
+    read(&mut out, &mut buf);
 
     let (tx_err, rx_err) = mpsc::channel();
     let mut stderr = process.stderr.take();
@@ -56,10 +63,10 @@ pub fn smlnj(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
             .write_all(inp.as_bytes())
             .unwrap();
 
-        read_until_bytes(&mut stdout, PRELUDE_MARK, &mut out).unwrap();
+        read(&mut out, &mut buf);
 
-        // remove -
-        let out = String::from_utf8(out[..out.len() - 1].to_vec()).unwrap();
+        // remove "- "
+        let out = String::from_utf8(out[..out.len() - 2].to_vec()).unwrap();
         let err: String = rx_err.try_iter().collect();
         tx_out.send(out + &err).unwrap();
     }
