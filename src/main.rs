@@ -16,6 +16,7 @@ mod ghci;
 use ghci::ghci;
 mod smlnj;
 use smlnj::smlnj;
+mod colors;
 
 mod utils;
 use utils::StringTools;
