@@ -83,6 +83,7 @@ dependencies = [
  "ctrlc",
  "dirs-next",
  "nix 0.19.1",
+ "once_cell",
  "rustyline",
 ]
 
@@ -130,6 +131,12 @@ dependencies = [
  "cfg-if 1.0.0",
  "libc",
 ]
+
+[[package]]
+name = "once_cell"
+version = "1.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "13bd41f508810a131401606d54ac32a467c97172d74ba7662562ebba5ad07fa0"
 
 [[package]]
 name = "redox_syscall"
