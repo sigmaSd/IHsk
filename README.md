@@ -1,5 +1,5 @@
 # IHsk
-[Haskell](https://www.haskell.com/) and [Smlnj](https://www.smlnj.org/) Repl
+[Haskell](https://www.haskell.org/) and [Smlnj](https://www.smlnj.org/) Repl
 
 By default it runs as a Haskell Repl
 
