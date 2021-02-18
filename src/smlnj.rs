@@ -1,4 +1,4 @@
-use crate::colors::Color;
+use rustyline::Color;
 use std::io::{prelude::*, BufReader};
 use std::process::Stdio;
 use std::sync::mpsc;
@@ -74,23 +74,32 @@ pub fn smlnj(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
 
 pub fn highlight(line: &str) -> String {
     // these chars can't be replaced \x1b[;3m0
-    // except on the first replace like the next line
-    line.replace(";", "\x1b[1;33m;\x1b[0m")
+    line.replace("exception", &"exception".red())
+        .replace("datatype", &"datatype".green())
         //sig + signature
         .replace("sig", &"sig".green())
         .replace("nature", &"nature".green())
         //struct + structure
         .replace("struct", &"struct".green())
+        .replace("raise", &"raise".red())
+        .replace("case", &"case".light_blue())
+        .replace("then", &"then".light_blue())
+        .replace("else", &"else".light_blue())
         .replace("ure", &"ure".green())
         .replace("val", &"val".green())
         .replace("end", &"end".green())
         .replace("fun", &"fun".green())
+        .replace("of", &"of".light_blue())
+        .replace("if", &"if".light_blue())
+        .replace("|", &"|".light_blue())
+        .replace("(", &"(".yellow())
+        .replace("*", &"*".yellow())
+        .replace(")", &")".yellow())
         .replace(":", &":".yellow())
         .replace("-", &"-".yellow())
         .replace("+", &"+".yellow())
         .replace(">", &">".yellow())
         .replace("<", &"<".yellow())
-        .replace("*", &"*".yellow())
         .replace("/", &"/".yellow())
         .replace("=", &"=".yellow())
         .replace(".", &".".red())
