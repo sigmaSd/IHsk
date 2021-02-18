@@ -7,7 +7,7 @@ By default it runs as a Haskell Repl
 
 To run smlnj Repl run `ihsk smlnj`
 
-<img src="./smlnj.png" width="50%" height="60%">
+<img src="./smlnj.png" width="200%" height="60%">
 
 # What/Why
 This is a wrapper over ghci and smlnj.
