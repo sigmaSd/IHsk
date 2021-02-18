@@ -20,7 +20,7 @@ use smlnj::smlnj;
 mod utils;
 use utils::StringTools;
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 enum Repl {
     Smlnj,
     Ghci,
@@ -96,6 +96,8 @@ impl Completer for IHsk {
 }
 
 fn main() {
+    println!("Welcome to {:?} repl!", *REPL);
+
     let mut rl = Editor::new();
     rl.set_helper(Some(IHsk::default()));
     rl.bind_sequence(
