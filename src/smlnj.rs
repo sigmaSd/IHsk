@@ -55,7 +55,8 @@ pub fn smlnj(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
 
         read_until_bytes(&mut stdout, PRELUDE_MARK, &mut out).unwrap();
 
-        let out = String::from_utf8(out.to_vec()).unwrap();
+        // remove -
+        let out = String::from_utf8(out[..out.len() - 1].to_vec()).unwrap();
         let err: String = rx_err.try_iter().collect();
         tx_out.send(out + &err).unwrap();
     }
