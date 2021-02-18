@@ -40,11 +40,13 @@ pub fn smlnj(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
 
     loop {
         out.clear();
-        let inp = match rx_in.recv() {
+        let mut inp = match rx_in.recv() {
             Ok(inp) => inp,
             // program has ended
             _ => break,
         };
+        // auto insert ;
+        inp.insert(inp.len() - 1, ';');
 
         process
             .stdin
