@@ -97,10 +97,12 @@ pub fn highlight(line: &str) -> String {
         .replace(")", &")".yellow())
         .replace(":", &":".yellow())
         .replace("-", &"-".yellow())
+        .replace("~", &"~".yellow())
         .replace("+", &"+".yellow())
         .replace(">", &">".yellow())
         .replace("<", &"<".yellow())
         .replace("/", &"/".yellow())
         .replace("=", &"=".yellow())
+        .replace(",", &",".yellow())
         .replace(".", &".".red())
 }
