@@ -13,6 +13,9 @@ use rustyline::{Editor, Helper};
 
 mod ghci;
 use ghci::ghci;
+mod smlnj;
+use smlnj::smlnj;
+
 mod utils;
 use utils::StringTools;
 
@@ -42,18 +45,22 @@ impl Highlighter for IHsk {
         true
     }
 }
+//order
+//1) ;
+//2) key: len
 fn highlight_keywords(line: &str) -> String {
     line.replace(";", "\x1b[1;33m;\x1b[0m")
-        .replace("let", "\x1b[1;32mlet\x1b[0m")
-        .replace("in", "\x1b[1;32min\x1b[0m")
+        //deriving
+        .replace("deriv", "\x1b[1;32mderiv\x1b[0m")
         .replace("where", "\x1b[1;31mwhere\x1b[0m")
         .replace("data", "\x1b[1;34mdata\x1b[0m")
-        .replace("deriving", "\x1b[1;35mderiving\x1b[0m")
         .replace("case", "\x1b[1;36mcase\x1b[0m")
-        .replace("of", "\x1b[1;36mof\x1b[0m")
-        .replace("if", "\x1b[1;33mif\x1b[0m")
         .replace("else", "\x1b[1;33melse\x1b[0m")
         .replace("then", "\x1b[1;33mthen\x1b[0m")
+        .replace("let", "\x1b[1;32mlet\x1b[0m")
+        .replace("in", "\x1b[1;32min\x1b[0m")
+        .replace("of", "\x1b[1;36mof\x1b[0m")
+        .replace("if", "\x1b[1;33mif\x1b[0m")
         .replace("=", "\x1b[1;33m=\x1b[0m")
         .replace("+", "\x1b[1;33m+\x1b[0m")
         .replace("-", "\x1b[1;33m-\x1b[0m")
@@ -106,7 +113,7 @@ fn main() {
 
     let (tx_in, rx_in) = channel();
     let (tx_out, rx_out) = channel();
-    std::thread::spawn(move || ghci(rx_in, tx_out));
+    std::thread::spawn(move || smlnj(rx_in, tx_out));
 
     let _ = load_history(&mut rl);
 
