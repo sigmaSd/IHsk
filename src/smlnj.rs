@@ -60,3 +60,31 @@ pub fn smlnj(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
         tx_out.send(out + &err).unwrap();
     }
 }
+
+pub fn highlight(line: &str) -> String {
+    line.replace(";", "\x1b[1;33m;\x1b[0m")
+        //deriving
+        .replace("deriv", "\x1b[1;32mderiv\x1b[0m")
+        .replace("where", "\x1b[1;31mwhere\x1b[0m")
+        .replace("data", "\x1b[1;34mdata\x1b[0m")
+        .replace("case", "\x1b[1;36mcase\x1b[0m")
+        .replace("else", "\x1b[1;33melse\x1b[0m")
+        .replace("then", "\x1b[1;33mthen\x1b[0m")
+        .replace("let", "\x1b[1;32mlet\x1b[0m")
+        .replace("in", "\x1b[1;32min\x1b[0m")
+        .replace("of", "\x1b[1;36mof\x1b[0m")
+        .replace("if", "\x1b[1;33mif\x1b[0m")
+        .replace("=", "\x1b[1;33m=\x1b[0m")
+        .replace("+", "\x1b[1;33m+\x1b[0m")
+        .replace("-", "\x1b[1;33m-\x1b[0m")
+        .replace("*", "\x1b[1;33m*\x1b[0m")
+        .replace("/", "\x1b[1;33m/\x1b[0m")
+        .replace("(", "\x1b[1;33m(\x1b[0m")
+        .replace(")", "\x1b[1;33m)\x1b[0m")
+        .replace(">", "\x1b[1;33m>\x1b[0m")
+        .replace("<", "\x1b[1;33m<\x1b[0m")
+        .replace("^", "\x1b[1;33m^\x1b[0m")
+        .replace("|", "\x1b[1;33m|\x1b[0m")
+        .replace(".", "\x1b[1;31m.\x1b[0m")
+        .replace("$", "\x1b[1;31m$\x1b[0m")
+}

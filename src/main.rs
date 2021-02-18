@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::{borrow::Cow, sync::mpsc::channel};
 
+use once_cell::sync::Lazy;
 use rustyline::{
     completion::Completer,
     error::ReadlineError,
@@ -18,6 +19,19 @@ use smlnj::smlnj;
 
 mod utils;
 use utils::StringTools;
+
+#[derive(PartialEq)]
+enum Repl {
+    Smlnj,
+    Ghci,
+}
+static REPL: Lazy<Repl> = Lazy::new(|| {
+    if std::env::args().nth(1).map(|v| v.to_lowercase()) == Some("smlnj".into()) {
+        Repl::Smlnj
+    } else {
+        Repl::Ghci
+    }
+});
 
 #[derive(Default)]
 struct IHsk {
@@ -39,42 +53,20 @@ impl Validator for IHsk {
 }
 impl Highlighter for IHsk {
     fn highlight<'l>(&self, line: &'l str, _pos: usize) -> Cow<'l, str> {
-        highlight_keywords(line).into()
+        //order
+        //1) ;
+        //2) key: len
+        if *REPL == Repl::Smlnj {
+            smlnj::highlight(line).into()
+        } else {
+            ghci::highlight(line).into()
+        }
     }
     fn highlight_char(&self, _line: &str, _pos: usize) -> bool {
         true
     }
 }
-//order
-//1) ;
-//2) key: len
-fn highlight_keywords(line: &str) -> String {
-    line.replace(";", "\x1b[1;33m;\x1b[0m")
-        //deriving
-        .replace("deriv", "\x1b[1;32mderiv\x1b[0m")
-        .replace("where", "\x1b[1;31mwhere\x1b[0m")
-        .replace("data", "\x1b[1;34mdata\x1b[0m")
-        .replace("case", "\x1b[1;36mcase\x1b[0m")
-        .replace("else", "\x1b[1;33melse\x1b[0m")
-        .replace("then", "\x1b[1;33mthen\x1b[0m")
-        .replace("let", "\x1b[1;32mlet\x1b[0m")
-        .replace("in", "\x1b[1;32min\x1b[0m")
-        .replace("of", "\x1b[1;36mof\x1b[0m")
-        .replace("if", "\x1b[1;33mif\x1b[0m")
-        .replace("=", "\x1b[1;33m=\x1b[0m")
-        .replace("+", "\x1b[1;33m+\x1b[0m")
-        .replace("-", "\x1b[1;33m-\x1b[0m")
-        .replace("*", "\x1b[1;33m*\x1b[0m")
-        .replace("/", "\x1b[1;33m/\x1b[0m")
-        .replace("(", "\x1b[1;33m(\x1b[0m")
-        .replace(")", "\x1b[1;33m)\x1b[0m")
-        .replace(">", "\x1b[1;33m>\x1b[0m")
-        .replace("<", "\x1b[1;33m<\x1b[0m")
-        .replace("^", "\x1b[1;33m^\x1b[0m")
-        .replace("|", "\x1b[1;33m|\x1b[0m")
-        .replace(".", "\x1b[1;31m.\x1b[0m")
-        .replace("$", "\x1b[1;31m$\x1b[0m")
-}
+
 impl Hinter for IHsk {
     type Hint = String;
 }
@@ -113,7 +105,13 @@ fn main() {
 
     let (tx_in, rx_in) = channel();
     let (tx_out, rx_out) = channel();
-    std::thread::spawn(move || smlnj(rx_in, tx_out));
+    std::thread::spawn(move || {
+        if *REPL == Repl::Smlnj {
+            smlnj(rx_in, tx_out)
+        } else {
+            ghci(rx_in, tx_out)
+        }
+    });
 
     let _ = load_history(&mut rl);
 
