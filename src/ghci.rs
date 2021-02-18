@@ -1,9 +1,8 @@
-use crate::utils::VecTools;
 use std::io::{prelude::*, BufReader};
 use std::process::Stdio;
 use std::sync::mpsc;
 
-const PRELUDE_MARK1: &[u8] = b"Prelude";
+const PRELUDE_MARK1: &[u8] = b"Prelude> ";
 
 pub fn ghci(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
     let mut process = std::process::Command::new("ghci")
@@ -21,12 +20,24 @@ pub fn ghci(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
     let mut read = |out: &mut Vec<u8>, mut buf: &mut [u8]| loop {
         let n = stdout.read(&mut buf).unwrap();
         out.extend(buf.iter().take(n));
-        if out.contains_slice(PRELUDE_MARK1) {
+        if out.ends_with(PRELUDE_MARK1) {
             break;
         }
     };
 
     //read welcome message
+    read(&mut out, &mut buf);
+
+    // fix the prompt to our mark
+    // so the prompt doesn't change when importing module
+    process
+        .stdin
+        .as_mut()
+        .unwrap()
+        .write_all(b":set prompt \"Prelude> \"\n")
+        .unwrap();
+
+    // read the new prompt line
     read(&mut out, &mut buf);
 
     let (tx_err, rx_err) = mpsc::channel();
@@ -66,10 +77,10 @@ pub fn ghci(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
         read(&mut out, &mut buf);
 
         let out = String::from_utf8(out.to_vec()).unwrap();
-        let end = out.rfind("Prelude").unwrap();
+        let end = out.rfind("Prelude> ").unwrap();
 
         //Note!!! sometimes the output starts with space????
-        let out = out[..end].trim_start().to_owned();
+        let out = out[..end].to_owned();
 
         let err: String = rx_err.try_iter().collect();
         tx_out.send(out + &err).unwrap();
