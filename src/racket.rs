@@ -116,8 +116,28 @@ pub fn highlight(line: &str, _pos: usize) -> String {
     let mut colored = String::new();
 
     const DEFINE: &str = "define";
+    const SET: &str = "set!";
+    const BEGIN: &str = "begin";
+    const LAMBDA: &str = "lambda";
 
     let mut chars = line.chars().enumerate();
+
+    let color_keyword_if_found = |keyword: &str,
+                                  color: fn(&str) -> String,
+                                  c,
+                                  i,
+
+                                  chars: &mut std::iter::Enumerate<std::str::Chars>,
+                                  colored: &mut String| {
+        if line.get(i..i + keyword.len()) == Some(keyword) {
+            for _ in keyword.chars().skip(1) {
+                chars.next().expect("Already checked");
+            }
+            colored.push_str(&color(keyword));
+        } else {
+            colored.push(c);
+        }
+    };
 
     let mut parse = || -> Option<()> {
         loop {
@@ -127,16 +147,36 @@ pub fn highlight(line: &str, _pos: usize) -> String {
                 '[' => colored.push_str(&bracket_color.next('[')),
                 ')' => colored.push_str(&bracket_color.rev(')')),
                 ']' => colored.push_str(&bracket_color.rev(']')),
-                'd' if line.get(i..i + DEFINE.len()) == Some(DEFINE) => {
-                    for _ in DEFINE.chars().skip(1) {
-                        chars.next()?;
-                    }
-                    colored.push_str(&DEFINE.light_blue())
-                }
+                'l' => color_keyword_if_found(
+                    LAMBDA,
+                    Color::light_blue,
+                    'l',
+                    i,
+                    &mut chars,
+                    &mut colored,
+                ),
+                'b' => color_keyword_if_found(
+                    BEGIN,
+                    Color::light_blue,
+                    'b',
+                    i,
+                    &mut chars,
+                    &mut colored,
+                ),
+                'd' => color_keyword_if_found(
+                    DEFINE,
+                    Color::light_blue,
+                    'd',
+                    i,
+                    &mut chars,
+                    &mut colored,
+                ),
+                's' => color_keyword_if_found(SET, Color::red, 's', i, &mut chars, &mut colored),
                 '+' => colored.push_str(&"+".yellow()),
                 '-' => colored.push_str(&"-".yellow()),
                 '/' => colored.push_str(&"/".yellow()),
                 '*' => colored.push_str(&"*".yellow()),
+                '=' => colored.push_str(&"=".yellow()),
                 c => colored.push(c),
             }
         }

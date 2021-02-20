@@ -207,7 +207,7 @@ dependencies = [
 [[package]]
 name = "rustyline"
 version = "7.1.0"
-source = "git+https://github.com/sigmaSd/rustyline#2e2c5cd788e27b8061ebc0c956219622dd3f685b"
+source = "git+https://github.com/sigmaSd/rustyline#d7cb09f894a09b9c55ae5d8c97972d6eb3870d4c"
 dependencies = [
  "bitflags",
  "cfg-if 1.0.0",
