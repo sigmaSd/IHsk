@@ -1,5 +1,5 @@
 # IHsk
-[Haskell](https://www.haskell.org/) and [Smlnj](https://www.smlnj.org/) Repl
+[Haskell](https://www.haskell.org/) [Smlnj](https://www.smlnj.org/) and [Racket](https://racket-lang.org/) Repl
 
 By default it runs as a Haskell Repl
 
@@ -8,6 +8,9 @@ By default it runs as a Haskell Repl
 To run smlnj Repl run `ihsk smlnj`
 
 <img src="./smlnj.png" width="200%" height="60%">
+
+
+To run racket Repl run `ihsk racket`
 
 # What/Why
 This is a wrapper over ghci and smlnj.
