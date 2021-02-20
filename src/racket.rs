@@ -139,53 +139,45 @@ pub fn highlight(line: &str, _pos: usize) -> String {
     const IF: &str = "if";
     const ELSE: &str = "else";
     const COND: &str = "cond";
+    const MPAIR: &str = "mpair";
 
     let mut chars = line.chars().enumerate();
-
-    let color_keyword_if_found = |keywords: Vec<&str>,
-                                  color: fn(&str) -> String,
-                                  i,
-
-                                  chars: &mut std::iter::Enumerate<std::str::Chars>,
-                                  colored: &mut String| {
-        for keyword in &keywords {
-            if line.get(i..i + keyword.len()) == Some(keyword) {
-                for _ in keyword.chars().skip(1) {
-                    chars.next().expect("Already checked");
-                }
-                colored.push_str(&color(keyword));
-                return;
-            }
-        }
-        let first_char = keywords[0].chars().next().expect("No empty keyword");
-        colored.push(first_char);
-    };
 
     let mut parse = || -> Option<()> {
         loop {
             let (i, c) = chars.next()?;
-            macro_rules! color {
-                ($keywords: expr, $color: expr) => {
-                    color_keyword_if_found($keywords, $color, i, &mut chars, &mut colored)
-                };
-            }
+
+            let mut color_keyword_if_found = |keywords: Vec<&str>, color: fn(&str) -> String| {
+                for keyword in &keywords {
+                    if line.get(i..i + keyword.len()) == Some(keyword) {
+                        for _ in keyword.chars().skip(1) {
+                            chars.next().expect("Already checked");
+                        }
+                        colored.push_str(&color(keyword));
+                        return;
+                    }
+                }
+                let first_char = keywords[0].chars().next().expect("No empty keyword");
+                colored.push(first_char);
+            };
+
             match c {
                 '(' => colored.push_str(&bracket_color.next('(')),
                 '[' => colored.push_str(&bracket_color.next('[')),
                 ')' => colored.push_str(&bracket_color.rev(')')),
                 ']' => colored.push_str(&bracket_color.rev(']')),
-                'a' => color!(vec![AND], Color::light_blue),
-                'b' => color!(vec![BEGIN], Color::light_blue),
-                'c' => color!(vec![CONS, CAR, CDR, COND], Color::light_blue),
-                'd' => color!(vec![DEFINE], Color::light_blue),
-                'e' => color!(vec![EMPTY, ELSE], |s| Color::rgb(s, 255, 100, 0)),
-                'i' => color!(vec![IF], |s| Color::rgb(s, 255, 100, 0)),
-                'l' => color!(vec![LAMBDA, LENGTH, LIST, LET], Color::light_blue),
-                'm' => color!(vec![MCONS, MCAR, MCDR], Color::red),
-                'n' => color!(vec![NULL], |s| Color::rgb(s, 255, 100, 0)),
-                'p' => color!(vec![PAIR], Color::light_blue),
-                's' => color!(vec![SETMCDR, SETMCAR, SET], Color::red),
-                '#' => color!(vec![TRUE, FALSE], Color::green),
+                'a' => color_keyword_if_found(vec![AND], Color::light_blue),
+                'b' => color_keyword_if_found(vec![BEGIN], Color::light_blue),
+                'c' => color_keyword_if_found(vec![CONS, CAR, CDR, COND], Color::light_blue),
+                'd' => color_keyword_if_found(vec![DEFINE], Color::light_blue),
+                'e' => color_keyword_if_found(vec![EMPTY, ELSE], |s| Color::rgb(s, 255, 100, 0)),
+                'i' => color_keyword_if_found(vec![IF], |s| Color::rgb(s, 255, 100, 0)),
+                'l' => color_keyword_if_found(vec![LAMBDA, LENGTH, LIST, LET], Color::light_blue),
+                'm' => color_keyword_if_found(vec![MPAIR, MCONS, MCAR, MCDR], Color::red),
+                'n' => color_keyword_if_found(vec![NULL], |s| Color::rgb(s, 255, 100, 0)),
+                'p' => color_keyword_if_found(vec![PAIR], Color::light_blue),
+                's' => color_keyword_if_found(vec![SETMCDR, SETMCAR, SET], Color::red),
+                '#' => color_keyword_if_found(vec![TRUE, FALSE], Color::green),
                 '+' => colored.push_str(&"+".yellow()),
                 '-' => colored.push_str(&"-".yellow()),
                 '/' => colored.push_str(&"/".yellow()),
