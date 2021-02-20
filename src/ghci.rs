@@ -87,7 +87,7 @@ pub fn ghci(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
     }
 }
 
-pub fn highlight(line: &str) -> String {
+pub fn highlight(line: &str, _pos: usize) -> String {
     line.replace(";", "\x1b[1;33m;\x1b[0m")
         //deriving
         .replace("deriv", "\x1b[1;32mderiv\x1b[0m")

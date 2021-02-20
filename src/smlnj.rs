@@ -72,7 +72,7 @@ pub fn smlnj(rx_in: mpsc::Receiver<String>, tx_out: mpsc::Sender<String>) {
     }
 }
 
-pub fn highlight(line: &str) -> String {
+pub fn highlight(line: &str, _pos: usize) -> String {
     // these chars can't be replaced \x1b[;3m0
     line.replace("exception", &"exception".red())
         .replace("datatype", &"datatype".green())
@@ -81,6 +81,7 @@ pub fn highlight(line: &str) -> String {
         .replace("nature", &"nature".green())
         //struct + structure
         .replace("struct", &"struct".green())
+        .replace("type", &"type".green())
         .replace("raise", &"raise".red())
         .replace("case", &"case".light_blue())
         .replace("then", &"then".light_blue())

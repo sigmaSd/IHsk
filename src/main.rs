@@ -16,6 +16,8 @@ mod ghci;
 use ghci::ghci;
 mod smlnj;
 use smlnj::smlnj;
+mod racket;
+use racket::racket;
 
 mod utils;
 use utils::StringTools;
@@ -24,13 +26,15 @@ use utils::StringTools;
 enum Repl {
     Smlnj,
     Ghci,
+    Racket,
 }
-static REPL: Lazy<Repl> = Lazy::new(|| {
-    if std::env::args().nth(1).map(|v| v.to_lowercase()) == Some("smlnj".into()) {
-        Repl::Smlnj
-    } else {
-        Repl::Ghci
-    }
+static REPL: Lazy<Repl> = Lazy::new(|| match std::env::args().nth(1) {
+    Some(repl) => match repl.to_lowercase().as_str() {
+        "smlnj" => Repl::Smlnj,
+        "racket" => Repl::Racket,
+        _ => Repl::Ghci,
+    },
+    None => Repl::Ghci,
 });
 
 #[derive(Default)]
@@ -52,14 +56,14 @@ impl Validator for IHsk {
     }
 }
 impl Highlighter for IHsk {
-    fn highlight<'l>(&self, line: &'l str, _pos: usize) -> Cow<'l, str> {
+    fn highlight<'l>(&self, line: &'l str, pos: usize) -> Cow<'l, str> {
         //order
         //1) ;
         //2) key: len
-        if *REPL == Repl::Smlnj {
-            smlnj::highlight(line).into()
-        } else {
-            ghci::highlight(line).into()
+        match *REPL {
+            Repl::Smlnj => smlnj::highlight(line, pos).into(),
+            Repl::Racket => racket::highlight(line, pos).into(),
+            Repl::Ghci => ghci::highlight(line, pos).into(),
         }
     }
     fn highlight_char(&self, _line: &str, _pos: usize) -> bool {
@@ -107,12 +111,10 @@ fn main() {
 
     let (tx_in, rx_in) = channel();
     let (tx_out, rx_out) = channel();
-    std::thread::spawn(move || {
-        if *REPL == Repl::Smlnj {
-            smlnj(rx_in, tx_out)
-        } else {
-            ghci(rx_in, tx_out)
-        }
+    std::thread::spawn(move || match *REPL {
+        Repl::Smlnj => smlnj(rx_in, tx_out),
+        Repl::Racket => racket(rx_in, tx_out),
+        Repl::Ghci => ghci(rx_in, tx_out),
     });
 
     let _ = load_history(&mut rl);
