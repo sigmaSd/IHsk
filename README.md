@@ -12,6 +12,9 @@ To run smlnj Repl run `ihsk smlnj`
 
 To run racket Repl run `ihsk racket`
 
+
+<img src="./racket.png" width="50%" height="60%">
+
 # What/Why
 This is a wrapper over ghci and smlnj.
 
