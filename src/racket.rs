@@ -119,24 +119,27 @@ pub fn highlight(line: &str, _pos: usize) -> String {
     const SET: &str = "set!";
     const BEGIN: &str = "begin";
     const LAMBDA: &str = "lambda";
+    const LET: &str = "let";
 
     let mut chars = line.chars().enumerate();
 
-    let color_keyword_if_found = |keyword: &str,
+    let color_keyword_if_found = |keywords: Vec<&str>,
                                   color: fn(&str) -> String,
                                   c,
                                   i,
 
                                   chars: &mut std::iter::Enumerate<std::str::Chars>,
                                   colored: &mut String| {
-        if line.get(i..i + keyword.len()) == Some(keyword) {
-            for _ in keyword.chars().skip(1) {
-                chars.next().expect("Already checked");
+        for keyword in keywords {
+            if line.get(i..i + keyword.len()) == Some(keyword) {
+                for _ in keyword.chars().skip(1) {
+                    chars.next().expect("Already checked");
+                }
+                colored.push_str(&color(keyword));
+                return;
             }
-            colored.push_str(&color(keyword));
-        } else {
-            colored.push(c);
         }
+        colored.push(c);
     };
 
     let mut parse = || -> Option<()> {
@@ -148,7 +151,7 @@ pub fn highlight(line: &str, _pos: usize) -> String {
                 ')' => colored.push_str(&bracket_color.rev(')')),
                 ']' => colored.push_str(&bracket_color.rev(']')),
                 'l' => color_keyword_if_found(
-                    LAMBDA,
+                    vec![LAMBDA, LET],
                     Color::light_blue,
                     'l',
                     i,
@@ -156,7 +159,7 @@ pub fn highlight(line: &str, _pos: usize) -> String {
                     &mut colored,
                 ),
                 'b' => color_keyword_if_found(
-                    BEGIN,
+                    vec![BEGIN],
                     Color::light_blue,
                     'b',
                     i,
@@ -164,14 +167,16 @@ pub fn highlight(line: &str, _pos: usize) -> String {
                     &mut colored,
                 ),
                 'd' => color_keyword_if_found(
-                    DEFINE,
+                    vec![DEFINE],
                     Color::light_blue,
                     'd',
                     i,
                     &mut chars,
                     &mut colored,
                 ),
-                's' => color_keyword_if_found(SET, Color::red, 's', i, &mut chars, &mut colored),
+                's' => {
+                    color_keyword_if_found(vec![SET], Color::red, 's', i, &mut chars, &mut colored)
+                }
                 '+' => colored.push_str(&"+".yellow()),
                 '-' => colored.push_str(&"-".yellow()),
                 '/' => colored.push_str(&"/".yellow()),
