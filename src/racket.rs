@@ -120,6 +120,9 @@ pub fn highlight(line: &str, _pos: usize) -> String {
     const BEGIN: &str = "begin";
     const LAMBDA: &str = "lambda";
     const LET: &str = "let";
+    const TRUE: &str = "#t";
+    const FALSE: &str = "#f";
+    const CONS: &str = "cons";
 
     let mut chars = line.chars().enumerate();
 
@@ -150,10 +153,10 @@ pub fn highlight(line: &str, _pos: usize) -> String {
                 '[' => colored.push_str(&bracket_color.next('[')),
                 ')' => colored.push_str(&bracket_color.rev(')')),
                 ']' => colored.push_str(&bracket_color.rev(']')),
-                'l' => color_keyword_if_found(
-                    vec![LAMBDA, LET],
+                'c' => color_keyword_if_found(
+                    vec![CONS],
                     Color::light_blue,
-                    'l',
+                    'c',
                     i,
                     &mut chars,
                     &mut colored,
@@ -174,14 +177,32 @@ pub fn highlight(line: &str, _pos: usize) -> String {
                     &mut chars,
                     &mut colored,
                 ),
+                'l' => color_keyword_if_found(
+                    vec![LAMBDA, LET],
+                    Color::light_blue,
+                    'l',
+                    i,
+                    &mut chars,
+                    &mut colored,
+                ),
                 's' => {
                     color_keyword_if_found(vec![SET], Color::red, 's', i, &mut chars, &mut colored)
                 }
+                '#' => color_keyword_if_found(
+                    vec![TRUE, FALSE],
+                    Color::green,
+                    '#',
+                    i,
+                    &mut chars,
+                    &mut colored,
+                ),
                 '+' => colored.push_str(&"+".yellow()),
                 '-' => colored.push_str(&"-".yellow()),
                 '/' => colored.push_str(&"/".yellow()),
                 '*' => colored.push_str(&"*".yellow()),
                 '=' => colored.push_str(&"=".yellow()),
+                '"' => colored.push_str(&"\"".yellow()),
+                '?' => colored.push_str(&"?".yellow()),
                 c => colored.push(c),
             }
         }
