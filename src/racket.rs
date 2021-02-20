@@ -135,17 +135,20 @@ pub fn highlight(line: &str, _pos: usize) -> String {
     const MCONS: &str = "mcons";
     const SETMCAR: &str = "set-mcar!";
     const SETMCDR: &str = "set-mcdr!";
+    const PAIR: &str = "pair";
+    const IF: &str = "if";
+    const ELSE: &str = "else";
+    const COND: &str = "cond";
 
     let mut chars = line.chars().enumerate();
 
     let color_keyword_if_found = |keywords: Vec<&str>,
                                   color: fn(&str) -> String,
-                                  c,
                                   i,
 
                                   chars: &mut std::iter::Enumerate<std::str::Chars>,
                                   colored: &mut String| {
-        for keyword in keywords {
+        for keyword in &keywords {
             if line.get(i..i + keyword.len()) == Some(keyword) {
                 for _ in keyword.chars().skip(1) {
                     chars.next().expect("Already checked");
@@ -154,97 +157,35 @@ pub fn highlight(line: &str, _pos: usize) -> String {
                 return;
             }
         }
-        colored.push(c);
+        let first_char = keywords[0].chars().next().expect("No empty keyword");
+        colored.push(first_char);
     };
 
     let mut parse = || -> Option<()> {
         loop {
             let (i, c) = chars.next()?;
+            macro_rules! color {
+                ($keywords: expr, $color: expr) => {
+                    color_keyword_if_found($keywords, $color, i, &mut chars, &mut colored)
+                };
+            }
             match c {
                 '(' => colored.push_str(&bracket_color.next('(')),
                 '[' => colored.push_str(&bracket_color.next('[')),
                 ')' => colored.push_str(&bracket_color.rev(')')),
                 ']' => colored.push_str(&bracket_color.rev(']')),
-                'a' => color_keyword_if_found(
-                    vec![AND],
-                    Color::light_blue,
-                    'a',
-                    i,
-                    &mut chars,
-                    &mut colored,
-                ),
-                'c' => color_keyword_if_found(
-                    vec![CONS, CAR, CDR],
-                    Color::light_blue,
-                    'c',
-                    i,
-                    &mut chars,
-                    &mut colored,
-                ),
-                'b' => color_keyword_if_found(
-                    vec![BEGIN],
-                    Color::light_blue,
-                    'b',
-                    i,
-                    &mut chars,
-                    &mut colored,
-                ),
-                'd' => color_keyword_if_found(
-                    vec![DEFINE],
-                    Color::light_blue,
-                    'd',
-                    i,
-                    &mut chars,
-                    &mut colored,
-                ),
-                'e' => color_keyword_if_found(
-                    vec![EMPTY],
-                    |s| Color::rgb(s, 255, 100, 0),
-                    'e',
-                    i,
-                    &mut chars,
-                    &mut colored,
-                ),
-                'l' => color_keyword_if_found(
-                    vec![LAMBDA, LENGTH, LIST, LET],
-                    Color::light_blue,
-                    'l',
-                    i,
-                    &mut chars,
-                    &mut colored,
-                ),
-                'm' => color_keyword_if_found(
-                    vec![MCONS, MCAR, MCDR],
-                    Color::red,
-                    'm',
-                    i,
-                    &mut chars,
-                    &mut colored,
-                ),
-                'n' => color_keyword_if_found(
-                    vec![NULL],
-                    |s| Color::rgb(s, 255, 100, 0),
-                    'n',
-                    i,
-                    &mut chars,
-                    &mut colored,
-                ),
-                's' => color_keyword_if_found(
-                    vec![SETMCDR, SETMCAR, SET],
-                    Color::red,
-                    's',
-                    i,
-                    &mut chars,
-                    &mut colored,
-                ),
-                '#' => color_keyword_if_found(
-                    vec![TRUE, FALSE],
-                    Color::green,
-                    '#',
-                    i,
-                    &mut chars,
-                    &mut colored,
-                ),
+                'a' => color!(vec![AND], Color::light_blue),
+                'b' => color!(vec![BEGIN], Color::light_blue),
+                'c' => color!(vec![CONS, CAR, CDR, COND], Color::light_blue),
+                'd' => color!(vec![DEFINE], Color::light_blue),
+                'e' => color!(vec![EMPTY, ELSE], |s| Color::rgb(s, 255, 100, 0)),
+                'i' => color!(vec![IF], |s| Color::rgb(s, 255, 100, 0)),
+                'l' => color!(vec![LAMBDA, LENGTH, LIST, LET], Color::light_blue),
+                'm' => color!(vec![MCONS, MCAR, MCDR], Color::red),
+                'n' => color!(vec![NULL], |s| Color::rgb(s, 255, 100, 0)),
+                'p' => color!(vec![PAIR], Color::light_blue),
+                's' => color!(vec![SETMCDR, SETMCAR, SET], Color::red),
+                '#' => color!(vec![TRUE, FALSE], Color::green),
                 '+' => colored.push_str(&"+".yellow()),
                 '-' => colored.push_str(&"-".yellow()),
                 '/' => colored.push_str(&"/".yellow()),
