@@ -1,7 +1,18 @@
 # IHsk
-[Haskell](https://www.haskell.org/) [Smlnj](https://www.smlnj.org/) and [Racket](https://racket-lang.org/) Repl
+[Haskell](https://www.haskell.org/) [Smlnj](https://www.smlnj.org/) and [Racket](https://racket-lang.org/) Repl and others
+
+**Repl list:**
+
+- Haskell
+- Smlnh
+- Racket
+- Gjs
+
+**usage:** `ihsk $repl_name`
 
 By default it runs as a Haskell Repl
+
+
 
 <img src="./ihsk.png" width="200%" height="60%">
 
