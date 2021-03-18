@@ -18,6 +18,8 @@ mod smlnj;
 use smlnj::smlnj;
 mod racket;
 use racket::racket;
+mod gjs;
+use gjs::gjs;
 
 mod utils;
 use utils::StringTools;
@@ -27,11 +29,13 @@ enum Repl {
     Smlnj,
     Ghci,
     Racket,
+    Gjs,
 }
 static REPL: Lazy<Repl> = Lazy::new(|| match std::env::args().nth(1) {
     Some(repl) => match repl.to_lowercase().as_str() {
         "smlnj" => Repl::Smlnj,
         "racket" => Repl::Racket,
+        "gjs" => Repl::Gjs,
         _ => Repl::Ghci,
     },
     None => Repl::Ghci,
@@ -64,6 +68,7 @@ impl Highlighter for IHsk {
             Repl::Smlnj => smlnj::highlight(line, pos).into(),
             Repl::Racket => racket::highlight(line, pos).into(),
             Repl::Ghci => ghci::highlight(line, pos).into(),
+            Repl::Gjs => gjs::highlight(line, pos).into(),
         }
     }
     fn highlight_char(&self, _line: &str, _pos: usize) -> bool {
@@ -115,6 +120,7 @@ fn main() {
         Repl::Smlnj => smlnj(rx_in, tx_out),
         Repl::Racket => racket(rx_in, tx_out),
         Repl::Ghci => ghci(rx_in, tx_out),
+        Repl::Gjs => gjs(rx_in, tx_out),
     });
 
     let _ = load_history(&mut rl);
